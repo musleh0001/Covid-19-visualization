@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Country wise Covid19 Data Visualization{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- breadcrumb -->
+        <nav aria-label="breadcrumb" class="mt-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-danger">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Country wise Covid19 Data Visualization</li>
+            </ol>
+        </nav>
+        <!-- ./breadcrumb -->
+        <div class="input-group mt-2">
+            <select class="custom-select country">
+                <option selected>Choose Country Name...</option>
+            </select>
+        </div>
+
+        <div class="input-group mt-2">
+            <select class="custom-select type">
+                <option selected>Choose Chart Type...</option>
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+            </select>
+        </div>
+
+        <div class="input-group mt-2">
+            <button class="btn btn-block btn-danger">Show</button> 
+        </div>
+
+        <canvas id="myChart" width="800" height="400"></canvas>
+    </div>
+
+    <script>
+        const CountryCodeAPI = "https://covid19-api.org/api/countries";
+        let CountrySelect = document.querySelector('.country');
+        let TypeSelect = document.querySelector('.type');
+        let btn = document.querySelector('.btn');
+
+        // get country name
+        async function getCountryName() {
+            const response = await fetch(CountryCodeAPI)
+            const data = await response.json();
+
+            for(let country in data) {
+                CountrySelect.innerHTML += `<option value="${data[country].alpha2}">${data[country].name}</option>`;
+            }
+        }
+        getCountryName();
+
+        // 
+
+        // get date format
+        function getDate() {
+            const startDay = moment("20200101").format("YYYY-MM-DD");
+            const endDay = moment().add(1, 'days').format("YYYY-MM-DD");
+            let date = [];
+        
+            for(var m = moment(startDay); m.isBefore(endDay); m.add(1, 'days')) {
+                date.push(m.format("YYYY-MM-DD"));
+            }
+        
+            return date;
+        }
+        
+        // get data
+        async function getCountryCovid19Data(api)  {
+            const date = api.slice(43);
+            const response = await fetch(api)
+            if(!response.ok) {
+                return {last_update:date, cases:0, deaths:0, recovered:0};
+            } else {
+                const data = await response.json();
+                const {last_update, cases, deaths, recovered} = data;
+                return {last_update, cases, deaths, recovered};
+            }
+        }
+
+        btn.addEventListener('click', async function () {
+            //window.location.reload(true);
+            const date = getDate();
+            const country = CountrySelect.options[CountrySelect.selectedIndex].value;
+            const type = TypeSelect.options[TypeSelect.selectedIndex].value;
+            const last_update = [];
+            const cases = [];
+            const deaths = [];
+            const recovered = [];
+
+            for(let m = 0; m < date.length; m++) {
+                const data = await getCountryCovid19Data(`https://covid19-api.org/api/status/${country}?date=${date[m]}`);
+                console.log(data);
+                last_update.push(data.last_update);
+                cases.push(data.cases);
+                deaths.push(data.deaths);
+                recovered.push(data.recovered);
+            }
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: type,
+                // The data for our dataset
+                data: {
+                    labels: last_update,
+                    datasets: [{
+                        label: 'Cases',
+                        backgroundColor: 'rgba(255,255,0,0.7)',
+                        borderColor: 'rgba(255,255,0,0.7)',
+                        data: cases,
+                        fill: false
+                    },{
+                        label: 'Deaths',
+                        backgroundColor: 'rgba(255,0,0,0.7)',
+                        borderColor: 'rgba(255,0,0,0.7)',
+                        data: deaths,
+                        fill: false
+                    },{
+                        label: 'Recovered',
+                        backgroundColor: 'rgba(0,255,0,0.7)',
+                        borderColor: 'rgba(0,255,0,0.7)',
+                        data: recovered,
+                        fill: false
+                    }]
+                },
+                // Configuration options go here
+                options: {}
+            });
+        });
+
+    </script>
+{% endblock %}

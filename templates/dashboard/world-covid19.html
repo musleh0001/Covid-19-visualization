@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}World Covid19 Data Visualization{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!-- breadcrumb -->
+        <nav aria-label="breadcrumb" class="mt-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-danger">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">World Covid19 Data Visualization</li>
+            </ol>
+        </nav>
+        <!-- ./breadcrumb -->
+
+        <div class="input-group mt-2">
+            <select class="custom-select type">
+                <option selected>Choose Chart Type...</option>
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="pie">Pie</option>
+                <option value="doughnut">Doughnut</option>
+                <option value="polarArea">Polar Area</option>
+            </select>
+
+            <div class="input-group mt-2">
+                <button class="btn btn-block btn-danger">Show</button> 
+            </div>
+        </div>
+
+        <canvas id="myChart" width="900" height="350" class="mt-5"></canvas>
+    </div>
+
+    <script>
+        // api
+        const WorldCovid19API = "https://covid19-api.com/totals?format=json";
+        const btn = document.querySelector('.btn');
+        const select = document.querySelector('.custom-select');
+
+        // api promises 
+        async function getWorldCovid19Data() {
+            const response = await fetch(WorldCovid19API)
+            const data = await response.json();
+            const {confirmed, recovered, critical, deaths} = data[0];
+
+            return {confirmed, recovered, critical, deaths};
+        }
+        
+        btn.addEventListener('click', async function(){
+            const data = await getWorldCovid19Data();
+            const type = select.options[select.selectedIndex].value;
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                // The type of chart we want to create
+                type: type,
+
+                // The data for our dataset
+                data: {
+                    labels: ['Confirmed', 'Recovered', 'Critical', 'Deaths'],
+                    datasets: [{
+                        label: 'World Covid19 data',
+                        backgroundColor: [
+                            'rgba(255,255,0,0.7)',
+                            'rgba(0,255,0,0.7)',
+                            'rgba(224,0,0,0.7)',
+                            'rgba(255,0,0,0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255,255,0,0.7)',
+                            'rgba(0,255,0,0.7)',
+                            'rgba(224,0,0,0.7)',
+                            'rgba(255,0,0,0.7)'
+                        ],
+                        pointBorderColor: 'rgba(0,0,0,1)',
+                        data: [data.confirmed, data.recovered, data.critical, data.deaths],
+                        fill: false
+                    }]
+                },
+
+                // Configuration options go here
+                options: {}
+            });
+        });
+    </script>
+{% endblock %}

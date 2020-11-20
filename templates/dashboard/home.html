@@ -1,3 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block stylesheet %}
+    <style>
+        body {
+            background-image: url('/static/img/covid19-world.jpg');
+            background-size: cover;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container text-center" style="margin-top: 250px;">
+        <a href="{% url 'world-covid19' %}" class="btn btn-outline-danger p-5">Word Covid19 Data Visualization</a>
+        <a href="{% url 'country-covid19' %}" class="btn btn-outline-danger p-5">Country wise Covid19 Data Visualization</a>
+    </div>
+{% endblock %}

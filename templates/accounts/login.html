@@ -12,12 +12,12 @@
                         {% csrf_token %}
                         <input type="hidden" name="next" value="{{ next }}" />
                         {% include 'includes/form.html' %}
-                        <button type="submit" class="btn btn-outline-primary btn-block mt-3">Log in</button>
+                        <button type="submit" class="btn btn-outline-danger btn-block mt-3">Log in</button>
                     </form>
                 </div>
 
                 <div class="card-footer text-muted text-center">
-                    New to Covid-19 visualization? <a href="{% url 'signup' %}">Sign up</a>
+                    New to Covid-19 visualization? <a href="{% url 'signup' %}" class="text-danger" style="text-decoration: none;">Sign up</a>
                 </div>
             </div>
         </div>
